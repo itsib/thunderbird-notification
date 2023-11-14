@@ -1,0 +1,16 @@
+.thunderbird-menu-box.panel-status-menu-box {
+    padding: 0;
+    spacing: 0;
+}
+
+.thunderbird-menu-box.panel-status-menu-box .system-status-icon {
+    margin: 0 1px;
+}
+
+.thunderbird-menu-item {
+    padding-left: 2px;
+}
+
+.thunderbird-menu-item .popup-menu-icon {
+    margin-right: 10px;
+}

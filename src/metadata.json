@@ -1,0 +1,13 @@
+{
+  "name": "Thunderbird Notification",
+  "description": "Indicator for new message in system tray. For the thunderbird.",
+  "uuid": "thunderbird-notification@itsib.github.com",
+  "url": "https://github.com/itsib/thunderbird-notification",
+  "shell-version": [
+    "42",
+    "43",
+    "44"
+  ],
+  "settings-schema": "org.gnome.shell.extensions.thunderbird-notification",
+  "gettext-domain" : "thunderbird-notification"
+}
