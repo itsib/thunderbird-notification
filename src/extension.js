@@ -45,7 +45,12 @@ class TrayIcon extends St.Icon {
   }
 });
 
-// Dropdown menu integrated in tray icon.
+/**
+ * Dropdown menu integrated in tray icon.
+ * @link https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/panel.js
+ *
+ * @type {{new(): AppMenuButton, style_class: string, name: string, $gtype: GObject.GType<Atk.ImplementorIface>, new(config?: Atk.ImplementorIface.ConstructorProperties): AppMenuButton, new(config?: Clutter.Animatable.ConstructorProperties): AppMenuButton, new(config?: Animatable.ConstructorProperties): AppMenuButton, new(config?: Clutter.Container.ConstructorProperties): AppMenuButton, class_find_child_property: {(klass: ObjectClass, property_name: (string | null)): ParamSpec, (klass: ObjectClass, property_name: (string | null)): ParamSpec}, class_list_child_properties: {(klass: ObjectClass): ParamSpec[], (klass: ObjectClass): ParamSpec[]}, new(config?: Container.ConstructorProperties): AppMenuButton, new(config?: Clutter.Scriptable.ConstructorProperties): AppMenuButton, new(config?: Scriptable.ConstructorProperties): AppMenuButton, new(config?: St.Button.ConstructorProperties): AppMenuButton, new(): AppMenuButton, new: {(): St.Button, (): St.Bin, (): Clutter.Actor, (): St.Bin, (): Clutter.Actor, (): Clutter.Actor, (): Actor, (): Gtk.Button}, new_with_label: {(text: (string | null)): St.Button, (label: (string | null)): Gtk.Button}, new(config?: St.Bin.ConstructorProperties): AppMenuButton, new(): AppMenuButton, new(config?: St.Widget.ConstructorProperties): AppMenuButton, new(config?: Clutter.Actor.ConstructorProperties): AppMenuButton, new(): AppMenuButton, new(config?: InitiallyUnowned.ConstructorProperties): AppMenuButton, new(config?: GObject.InitiallyUnowned.ConstructorProperties): AppMenuButton, new(config?: Actor.ConstructorProperties): AppMenuButton, new(): AppMenuButton, new(config?: Gtk.Button.ConstructorProperties): AppMenuButton, new(): AppMenuButton, new_from_icon_name(icon_name: (string | null)): Gtk.Button, new_with_mnemonic(label: (string | null)): Gtk.Button, new(config?: Gtk.Accessible.ConstructorProperties): AppMenuButton, new(config?: Gtk.Buildable.ConstructorProperties): AppMenuButton, new(config?: Gtk.ConstraintTarget.ConstructorProperties): AppMenuButton, new(config?: Gtk.Widget.ConstructorProperties): AppMenuButton, get_default_direction(): Gtk.TextDirection, set_default_direction(dir: Gtk.TextDirection): void, new(config?: Gtk.Actionable.ConstructorProperties): AppMenuButton, prototype: AppMenuButton}}
+ */
 const AppMenuButton = GObject.registerClass(
 class AppMenuButton extends PanelMenu.Button {
 
