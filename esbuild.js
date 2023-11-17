@@ -2,6 +2,7 @@ const fs = require('fs');
 const { resolve } = require('path');
 const AdmZip = require('adm-zip');
 const metadata = require('./src/metadata.json');
+const { execSync } = require('child_process');
 
 /**
  * Copy folder recursively
@@ -22,6 +23,7 @@ function copyDir(source, destination) {
 
   // Copy metadata.json
   fs.copyFileSync(resolve(__dirname, 'src/extension.js'), resolve(__dirname, 'dist/extension.js'))
+  fs.copyFileSync(resolve(__dirname, 'src/prefs.js'), resolve(__dirname, 'dist/prefs.js'))
 
   // Copy metadata.json
   fs.copyFileSync(resolve(__dirname, 'src/metadata.json'), resolve(__dirname, 'dist/metadata.json'))
@@ -30,8 +32,12 @@ function copyDir(source, destination) {
   fs.copyFileSync(resolve(__dirname, 'src/stylesheet.css'), resolve(__dirname, 'dist/stylesheet.css'))
 
   // Copy others
+  copyDir('src/ui', 'dist/ui');
   copyDir('src/icons', 'dist/icons');
   copyDir('src/modules', 'dist/modules');
+  copyDir('src/schemas', 'dist/schemas');
+
+  execSync(`glib-compile-schemas ${resolve(__dirname, 'dist/schemas/')}`);
 
   // Pack extension
   const zipFilename = `${metadata.uuid}.zip`;

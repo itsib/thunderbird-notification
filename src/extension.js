@@ -17,7 +17,10 @@ let Logger;
  */
 let TrayIconInstance;
 
-// Extend tray icon to change state
+/**
+ *
+ * @type {TrayIcon}
+ */
 const TrayIcon = GObject.registerClass(
 class TrayIcon extends St.Icon {
 

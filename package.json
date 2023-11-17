@@ -1,12 +1,13 @@
 {
   "name": "thunderbird-notification",
   "version": "0.0.1",
-  "description": "Indicator for new message in system tray. For the thunderbird.",
+  "description": "Indicator for new message in system tray. For the thunderbird email client.",
   "author": "Sergey <itsib.su@gmail.com>",
   "license": "ISC",
   "private": true,
   "main": "dist/extension.js",
   "scripts": {
+    "start": "node imap-test.js",
     "clean": "rm -rf dist",
     "build:app": "node esbuild.js",
     "build": "npm run clean && npm run build:app",
@@ -14,12 +15,15 @@
     "reload": "./scripts/reload.sh",
     "logs": "./scripts/journal.sh"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@girs/adw-1": "^1.4.0-3.2.4",
     "@girs/gjs": "^3.2.3",
     "@girs/gnome-shell": "^3.0.0",
     "@girs/gtk-4.0": "^4.10.5-3.2.3",
     "@types/node": "^18.18.9",
     "adm-zip": "^0.5.10"
+  },
+  "dependencies": {
+    "imap": "^0.8.19"
   }
 }

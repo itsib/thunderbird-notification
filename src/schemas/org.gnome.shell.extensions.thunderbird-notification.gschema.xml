@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="thunderbird-notification">
+    <schema id="org.gnome.shell.extensions.thunderbird-notification"
+            path="/org/gnome/shell/extensions/thunderbird-notification/">
+        <key name="refresh-interval" type="i">
+            <default>60</default>
+            <summary>Refresh Interval</summary>
+            <description>After what period of time will emails be updated over the IMAP protocol.</description>
+        </key>
+
+        <key name="imap-accounts" type="as">
+            <default>[ ]</default>
+            <summary>List of IMAP clients</summary>
+            <description>Contains an array of JSON objects with data to connect to the IMAP mailbox.</description>
+        </key>
+    </schema>
+</schemalist>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="thunderbird-notification">
+  <requires lib="gtk+" version="4.0"/>
+  <object class="GtkBox" id="imap-server-manage-dialog">
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="margin-top">16</property>
+    <property name="margin-bottom">16</property>
+    <property name="margin-end">24</property>
+    <property name="margin-start">24</property>
+    <property name="orientation">vertical</property>
+    <!-- Login password -->
+    <child>
+      <object class="GtkBox">
+        <property name="can-focus">True</property>
+        <property name="margin-bottom">12</property>
+        <property name="spacing">32</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="login-box">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
+            <property name="hexpand">1</property>
+            <child>
+              <object class="GtkLabel" id="login-label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Login</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="login-field">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="editable">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="password-box">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
+            <property name="hexpand">1</property>
+            <child>
+              <object class="GtkLabel" id="password-label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Password</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="password-field">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="placeholder-text">******</property>
+                <property name="input-purpose">password</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <!-- Host & Port -->
+    <child>
+      <!-- n-columns=3 n-rows=3 -->
+      <object class="GtkBox">
+        <property name="can-focus">True</property>
+        <property name="margin-bottom">12</property>
+        <property name="spacing">32</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="host-box">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
+            <property name="hexpand">1</property>
+            <child>
+              <object class="GtkLabel" id="host-label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Host</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="host-field">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="placeholder-text" translatable="yes">imap.</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="port-box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
+            <property name="hexpand">1</property>
+            <child>
+              <object class="GtkLabel" id="port-label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Port</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="port-field">
+                <property name="can-focus">False</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <!-- TLS switch -->
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">16</property>
+        <property name="spacing">20</property>
+        <property name="hexpand">1</property>
+        <child>
+          <object class="GtkLabel" id="tls-label">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hexpand">1</property>
+            <property name="xalign">0</property>
+            <property name="single-line-mode">True</property>
+            <property name="width_request">300</property>
+            <property name="label" translatable="yes">Use TLS secure connection</property>
+          </object>
+        </child>
+        <child>
+
+        </child>
+        <child>
+          <object class="GtkBox" id="tls-box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hexpand">0</property>
+            <child>
+              <object class="GtkSwitch" id="tls-switch">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="active">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

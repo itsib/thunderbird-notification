@@ -55,14 +55,17 @@ declare interface ExtensionMetadata {
   readonly donations?: string;
 }
 
+declare interface ExtensionSettings {
+  ['refresh-interval']: number;
+  ['imap-accounts']: string[];
+}
+
 declare interface Logger {
   debug: (...rest: string[]) => void;
   info: (...rest: string[]) => void;
   warn: (...rest: string[]) => void;
   error: (...rest: string[]) => void;
 }
-
-declare type TailscaleState = 'enabled' | 'disabled' | 'connected' | 'loading';
 
 declare interface Modules {
   logger: { Logger: Logger };
