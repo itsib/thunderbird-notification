@@ -32,7 +32,7 @@ function copyDir(source, destination) {
   fs.copyFileSync(resolve(__dirname, 'src/stylesheet.css'), resolve(__dirname, 'dist/stylesheet.css'))
 
   // Copy others
-  copyDir('src/ui', 'dist/ui');
+  copyDir('src/widgets', 'dist/widgets');
   copyDir('src/icons', 'dist/icons');
   copyDir('src/modules', 'dist/modules');
   copyDir('src/schemas', 'dist/schemas');

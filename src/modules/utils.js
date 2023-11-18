@@ -3,3 +3,72 @@ var MenuAlignment = {
   Right: 0,
   Center: 0.5,
 }
+
+var SEP = '::';
+
+/**
+ *
+ * @param object {{ [key: string]: string | number | boolean | null | undefined }} Object to serialize
+ * @param keys {string[]} Ordered keys of object to serialize
+ * @returns {string}
+ */
+var serialize = function (object, keys) {
+  let serialized = '';
+
+  const lastInx = keys.length - 1;
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = object[key];
+    const type = typeof value;
+    const separator = lastInx === i ? '' : SEP;
+
+    // b - bool
+    // d - digit
+    // n - null | undefined
+    // s - string
+
+    let stringValue;
+    if (type === 'boolean') {
+      stringValue = value ? 'b1' : 'b0';
+    } else if (type === 'number') {
+      stringValue = `d${value}`;
+    } else if (value == null) {
+      stringValue = 'n' // null
+    } else {
+      stringValue = `s${value}`;
+    }
+
+    serialized += `${stringValue}${separator}`;
+  }
+
+  return serialized;
+}
+
+var deserialize = (serialized, keys) => {
+  const object = {};
+  const segments = serialized.split(SEP);
+
+  // b - bool
+  // d - digit
+  // n - null | undefined
+  // s - string
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const segment = segments[i];
+    const type = segment.substring(0, 1);
+    const value = segment.substring(1);
+
+    if (type === 'b') {
+      object[key] = Boolean(+value);
+    } else if (type === 'd') {
+      object[key] = Number(value);
+    } else if (type === 's') {
+      object[key] = value;
+    } else {
+      object[key] = null;
+    }
+  }
+
+  return object;
+}
