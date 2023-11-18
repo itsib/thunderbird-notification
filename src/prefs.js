@@ -34,6 +34,7 @@ class PreferencesWidget extends Gtk.Box {
  * @param meta {ExtensionMetadata} The metadata.json file, parsed as JSON
  */
 function init(meta) {
+    new Promise((resolve, reject) => {});
     ExtensionUtils.initTranslations(meta['gettext-domain']);
 }
 
