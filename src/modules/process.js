@@ -1,16 +1,15 @@
-const { GObject, St, Gio, Atk, GLib } = imports.gi;
+const { Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Modules = Me.imports.modules;
 
-const { deserialize } = Modules.utils;
-const Logger = new Modules.logger.Logger(Me.metadata['gettext-domain']);
+const { deserialize } = Me.imports.modules.utils;
+const { Logger } = Me.imports.modules.logger;
 
 /**
  *
  * @param output {string}
  */
-const parseOutput = output => {
+var parseOutput = output => {
   const result = output.match(/total\s(\d+)\sunseen\s(\d+)/);
   if (!result) {
     return { total: 0, unread: 0 };
@@ -21,6 +20,11 @@ const parseOutput = output => {
   };
 }
 
+/**
+ * Get unread messages
+ * @param serialized {string}
+ * @return {Promise<number>}
+ */
 var messages = serialized => {
   const config = deserialize(serialized);
 

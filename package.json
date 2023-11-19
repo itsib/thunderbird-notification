@@ -1,5 +1,5 @@
 {
-  "name": "thunderbird-notification",
+  "name": "email-notification",
   "version": "0.0.1",
   "description": "Indicator for new message in system tray. For the thunderbird email client.",
   "author": "Sergey <itsib.su@gmail.com>",
@@ -16,14 +16,8 @@
     "logs": "./scripts/journal.sh"
   },
   "devDependencies": {
-    "@girs/adw-1": "^1.4.0-3.2.4",
-    "@girs/gjs": "^3.2.3",
-    "@girs/gnome-shell": "^3.0.0",
-    "@girs/gtk-4.0": "^4.10.5-3.2.3",
     "@types/node": "^18.18.9",
     "adm-zip": "^0.5.10",
-    "buffer": "^6.0.3",
-    "stream-browserify": "^3.0.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
   }

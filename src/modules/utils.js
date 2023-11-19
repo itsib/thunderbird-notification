@@ -4,14 +4,10 @@ var MenuAlignment = {
   Center: 0.5,
 }
 
-var ProcessFlags = {
-  STDOUT_PIPE: 3,
-  STDERR_PIPE: 5,
-}
-
 var StoreKey = {
   RefreshInterval: 'refresh-interval',
   ImapSettings: 'imap-accounts',
+  LogLevel: 'log-level',
 }
 
 var IMAP_SETTING_FIELDS = ['id', 'host', 'port', 'login', 'password', 'tls'];

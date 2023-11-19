@@ -2,20 +2,18 @@ const { GObject, Gtk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const _ = ExtensionUtils.gettext;
+const { Logger } = Me.imports.modules.logger;
 
-/** @type {Logger} */
-const Logger = new Me.imports.modules.logger.Logger(Me.metadata['gettext-domain']);
-const PROP_FLAGS = GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT;
+const _ = ExtensionUtils.gettext;
 
 var ImapConfigFormDialog = class ImapConfigForm extends Gtk.Dialog {
   static [GObject.properties] = {
-    id: GObject.ParamSpec.int('id', 'id', 'id', PROP_FLAGS, -1, 65535, -1),
-    host: GObject.ParamSpec.string('host', 'host', 'host', PROP_FLAGS, 'imap.'),
-    port: GObject.ParamSpec.uint('port', 'port', 'port', PROP_FLAGS, 0, 65535, 993),
-    login: GObject.ParamSpec.string('login', 'login', 'login', PROP_FLAGS, ''),
-    password: GObject.ParamSpec.string('password', 'password', 'password', PROP_FLAGS, ''),
-    tls: GObject.ParamSpec.boolean('tls', 'tls', 'tls', PROP_FLAGS, true),
+    id: GObject.ParamSpec.int('id', 'id', 'id', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, -1, 65535, -1),
+    host: GObject.ParamSpec.string('host', 'host', 'host', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, 'imap.'),
+    port: GObject.ParamSpec.uint('port', 'port', 'port', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, 0, 65535, 993),
+    login: GObject.ParamSpec.string('login', 'login', 'login', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, ''),
+    password: GObject.ParamSpec.string('password', 'password', 'password', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, ''),
+    tls: GObject.ParamSpec.boolean('tls', 'tls', 'tls', GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT, true),
   };
 
   static [GObject.signals] = {
@@ -31,6 +29,8 @@ var ImapConfigFormDialog = class ImapConfigForm extends Gtk.Dialog {
     const title = isAdd ? _('Add new IMAP server configuration') : _('Edit IMAP server configuration');
     super({ title, use_header_bar: true, transient_for, modal: true, decorated: true});
 
+    Logger.debug('Open IMAP manage dialog');
+
     this.id = values?.id ?? -1;
     if (values) {
       this.host = values.host;
@@ -42,7 +42,7 @@ var ImapConfigFormDialog = class ImapConfigForm extends Gtk.Dialog {
 
     const builder = new Gtk.Builder();
     builder.set_translation_domain(Me.metadata['gettext-domain']);
-    builder.add_from_file(`${Me.path}/widgets/imap-config-form-dialog.ui`);
+    builder.add_from_file(`${Me.path}/prefs-ui/imap-config-form-dialog.ui`);
 
     /** @type {Gtk.Widget} */
     const imapConfigForm = builder.get_object('imapConfigForm');

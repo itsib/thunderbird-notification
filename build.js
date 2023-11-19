@@ -29,7 +29,7 @@ function copySourcesToProject() {
   fs.copyFileSync(resolve(__dirname, 'src/stylesheet.css'), resolve(__dirname, 'dist/stylesheet.css'))
 
   // Copy others
-  copyDir('src/widgets', 'dist/widgets');
+  copyDir('src/prefs-ui', 'dist/prefs-ui');
   copyDir('src/icons', 'dist/icons');
   copyDir('src/modules', 'dist/modules');
   copyDir('src/schemas', 'dist/schemas');

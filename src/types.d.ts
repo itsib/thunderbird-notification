@@ -1,7 +1,3 @@
-///<reference path="../node_modules/@types/node/index.d.ts"/>
-///<reference path="../node_modules/@girs/gnome-shell/src/index.d.ts"/>
-///<reference path="../node_modules/@girs/gjs/gjs.d.ts"/>
-
 declare interface MenuAlignment {
   Left: number;
   Right: number;
@@ -55,6 +51,11 @@ declare interface ExtensionMetadata {
   readonly donations?: string;
 }
 
+declare interface StoreKey {
+  RefreshInterval: 'refresh-interval';
+  ImapSettings: 'imap-accounts';
+}
+
 declare interface ExtensionSettings {
   ['refresh-interval']: number;
   ['imap-accounts']: string[];
@@ -70,6 +71,9 @@ declare interface Logger {
 declare interface Modules {
   logger: { Logger: Logger };
   utils: { MenuAlignment: MenuAlignment };
+  process: {
+    messages: (serialized: string) => Promise<number>;
+  }
 }
 
 declare interface Extension {

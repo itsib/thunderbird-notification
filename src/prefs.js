@@ -1,16 +1,14 @@
-const { Adw, GObject, Gtk, Gio, GLib, Pango } = imports.gi;
+const { GObject, Gtk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Modules = Me.imports.modules;
-
-const { RefreshIntervalControl } = Me.imports.widgets['refresh-interval-control'];
-const { ImapConfigsListWidget } = Me.imports.widgets['imap-configs-list-widget'];
-
-const _ = ExtensionUtils.gettext;
 
 /** @type {Logger} */
-const Logger = new Modules.logger.Logger(Me.metadata['gettext-domain']);
+const { Logger } = Me.imports.modules.logger;
+const { ApplicationPrefsGroup } = Me.imports['prefs-ui']['application-prefs-group'];
+const { ImapConfigsPrefsGroup } = Me.imports['prefs-ui']['imap-configs-prefs-group'];
+
+const _ = ExtensionUtils.gettext;
 
 class PreferencesWidget extends Gtk.Box {
     static {
@@ -23,8 +21,8 @@ class PreferencesWidget extends Gtk.Box {
             spacing: 20,
         });
 
-        this.append(new RefreshIntervalControl());
-        this.append(new ImapConfigsListWidget());
+        this.append(new ApplicationPrefsGroup());
+        this.append(new ImapConfigsPrefsGroup());
     }
 }
 

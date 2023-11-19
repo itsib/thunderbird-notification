@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface domain="thunderbird-notification">
+<interface domain="email-notification">
     <requires lib="gtk+" version="4.0"/>
     <object class="GtkBox" id="imapConfigForm">
         <property name="visible">True</property>

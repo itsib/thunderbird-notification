@@ -2,15 +2,12 @@ const { Adw, GObject, Gtk, Gio, GLib, Pango } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Modules = Me.imports.modules;
 /** @type {ImapConfigFormDialog} */
-const { ImapConfigFormDialog } = Me.imports.widgets['imap-config-form-dialog'];
+const { ImapConfigFormDialog } = Me.imports['prefs-ui']['imap-config-form-dialog'];
+const { Logger } = Me.imports.modules.logger;
+const { serialize, deserialize, StoreKey } = Me.imports.modules.utils;
 
 const _ = ExtensionUtils.gettext;
-
-/** @type {Logger} */
-const Logger = new Modules.logger.Logger(Me.metadata['gettext-domain']);
-const { serialize, deserialize, StoreKey } = Modules.utils;
 
 class DumpItem extends GObject.Object {
   static {
@@ -287,6 +284,8 @@ class ImapConfigsList extends GObject.Object {
       this._imapServers.push(new ImapConfigModel(deserialize(serialized)));
     }
 
+    Logger.debug(`Current IMAP config state: ${JSON.stringify(this._imapServers)}`);
+
     this.items_changed(0, removed, this._imapServers.length);
   }
 
@@ -308,7 +307,7 @@ class ImapConfigsList extends GObject.Object {
   }
 }
 
-var ImapConfigsListWidget = class ImapConfigsListWidget extends Adw.PreferencesGroup {
+var ImapConfigsPrefsGroup = class ImapConfigsPrefsGroup extends Adw.PreferencesGroup {
   static {
     GObject.registerClass(this);
 
@@ -392,8 +391,6 @@ var ImapConfigsListWidget = class ImapConfigsListWidget extends Adw.PreferencesG
    * @private
    */
   _openEditImapConfigDialog(serialized) {
-    Logger.info(`Edit serialized ${serialized}`);
-
     const values = deserialize(serialized);
 
     Logger.info(`Edit deserialized ${JSON.stringify(values)}`)
@@ -442,7 +439,7 @@ var ImapConfigsListWidget = class ImapConfigsListWidget extends Adw.PreferencesG
    * @private
    */
   _handleFormResponse(values) {
-    Logger.info(`Handle: ${JSON.stringify(values)}`);
+    Logger.debug(`Handle: ${JSON.stringify(values)}`);
 
     const { id, ...fields } = values;
 

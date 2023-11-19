@@ -6,14 +6,13 @@ const PopupMenu = imports.ui.popupMenu;
 
 const Me = ExtensionUtils.getCurrentExtension();
 const Modules = Me.imports.modules;
-const { MenuAlignment, StoreKey } = Modules.utils;
-const { messages } = Modules.messages;
-const { TrayIconWidget } = Me.imports.widgets['tray-icon-widget'];
+const { MenuAlignment, StoreKey } = Me.imports.modules.utils;
+const { messages } = Me.imports.modules.process;
+/** @type {Logger} */
+const { Logger } = Me.imports.modules.logger;
 
 const _ = ExtensionUtils.gettext;
 
-/** @type {Logger} */
-let Logger =  new Modules.logger.Logger(Me.metadata['gettext-domain']);
 /**
  * @type {TrayIconWidget}
  */
@@ -54,6 +53,47 @@ function startUpdater(interval, configs) {
   update();
 }
 
+class TrayIconWidget extends St.Icon {
+  static { GObject.registerClass(this) }
+
+  /** @type {Gio.Icon[]} */
+  _iconsSet;
+
+  constructor() {
+    const iconsSet = [
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-0.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-1.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-2.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-3.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-4.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-5.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-6.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-7.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-8.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-9.svg'),
+      Gio.icon_new_for_string(Me.path + '/icons/tray-icon-messages-10.svg'),
+    ];
+
+    super({ gicon: iconsSet[0], style_class: 'system-status-icon' });
+
+    this._iconsSet = iconsSet;
+  }
+
+  /**
+   * Update messages count in tray
+   * @param count {number}
+   */
+  setMessagesCount(count = 0) {
+    const index = count <= 0 ? 0 : count >= 10 ? 10 : count;
+
+    this.gicon = this._iconsSet[index];
+  }
+
+  destroy() {
+    super.destroy();
+  }
+}
+
 /**
  * Dropdown menu integrated in tray icon.
  * @link https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/panel.js
@@ -64,15 +104,15 @@ class AppMenuButton extends PanelMenu.Button {
   static { GObject.registerClass(this) }
 
   _init() {
-    super._init(MenuAlignment.Center, _('Thunderbird Mail Client'));
+    super._init(MenuAlignment.Center, _('Email Client'));
 
-    let box = new St.BoxLayout({ style_class: 'panel-status-menu-box thunderbird-menu-box' });
+    let box = new St.BoxLayout({ style_class: 'panel-status-menu-box email-menu-box' });
     box.add_child(TrayIconInstance);
 
     this.add_child(box);
 
     // Define menu items
-    const menuItemCssClass = { style_class: 'thunderbird-menu-item' }
+    const menuItemCssClass = { style_class: 'email-menu-item' }
 
     // Create inbox menu item
     const menuOpenInboxIcon = Gio.icon_new_for_string(Me.path + '/icons/menu-icon-box.svg');
@@ -150,7 +190,6 @@ class ThunderbirdNotificationExtension {
   }
 
   enable() {
-    Logger = new Modules.logger.Logger(Me.metadata['gettext-domain']);
     Logger.info('Enabled');
 
     // Add tray icon
@@ -163,7 +202,6 @@ class ThunderbirdNotificationExtension {
 
   disable() {
     Logger.warn('Disabled');
-    Logger = null;
 
     this._menu.destroy();
     this._menu = null;
