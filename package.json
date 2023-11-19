@@ -9,6 +9,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build:app": "node build.js",
+    "build:imap": "webpack-cli",
     "build": "npm run clean && npm run build:app",
     "validate": "tsc --noEmit",
     "reload": "./scripts/reload.sh",

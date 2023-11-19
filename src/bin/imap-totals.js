@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-const Imap = require('imap');
+const Imap = require('./connection');
 
 function getConfigFromArgs(_args) {
   const [_node, _file, ...args] = _args;
 
-  const configs = [];
+  let host;
+  let port;
+  let user;
+  let password;
+  let tls;
 
   while (args.length) {
     const flag = args.shift();
@@ -13,48 +17,49 @@ function getConfigFromArgs(_args) {
       case '-h':
       case '--help':
         return help();
-      case '-c':
-      case '--conn':
-        configs.push(deserialize(args.shift()));
+      case '--host':
+        host = args.shift()
+        break;
+      case '-p':
+      case '--port':
+        port = Number(args.shift());
+        break;
+      case '-u':
+      case '--user':
+        user = args.shift();
+        break;
+      case '--password':
+        password = args.shift()
+        break;
+      case '--tls':
+        const t = args.shift();
+        tls = t === 'true' || t === '1';
         break;
       default:
         console.error(`Unknown parameter ${flag}`);
         process.exit(1);
     }
   }
-
-  return configs;
-}
-
-function deserialize(serialized) {
-  const keys = ['host', 'port', 'login', 'password', 'tls'];
-  const values = serialized.trim().split('::');
-  if (keys.length !== values.length) {
-    console.error(`Unresolved config parameter ${serialized}`);
+  port = port ?? 993;
+  tls = tls ?? true;
+  if (!host || !user || !password) {
+    console.error(`Fields host, user and password is required `);
     process.exit(1);
   }
 
-  const host = values[0].trim();
-  return {
-    host,
-    port: Number(values[1]),
-    user: values[2].trim(),
-    password: values[3].trim(),
-    tls: ['1', 'true', 'yes'].includes(values[4].trim()),
-    tlsOptions: {
-      servername: host
-    },
-  }
+  return { host, port, user, password, tls, tlsOptions: { servername: host } };
 }
 
 function help() {
 const text = `Utility for getting the number of new emails via IMAP.
   -h, --help            Displays this help.
-  -c, --conn <config>   Serialized connection config. 
-                        Serialize format: 
-                            host::port::login::password::tls
-                        For example:
-                           "imap.google.com::993::user@gmail.com::password:true"
+      --host            IMAP server host.
+  -p, --port <config>   Serialized connection config. 
+  
+  -u, --user            Credentials for IMAP inbox.
+      --password     
+      
+      --tls                    
 `;
   console.log(text);
 
@@ -64,11 +69,10 @@ const text = `Utility for getting the number of new emails via IMAP.
 /**
  * Connect co IMAP server
  * @param config
- * @return {Promise<Connection>}
  */
 function connect(config) {
   return new Promise((resolve, reject) => {
-    const connection = new Imap({ ...config });
+    const connection = new Imap(config);
 
     connection.once('error', (err) => {
       connection.destroy();
@@ -117,15 +121,16 @@ async function fetchInbox(config) {
 }
 
 (async () => {
-  const configs = getConfigFromArgs(process.argv);
+  const config = getConfigFromArgs(process.argv);
 
-  Promise.all(configs.map(config => fetchInbox(config).then(({ total, unseen }) => `${config.host} total ${total} unseen ${unseen}`)))
-    .then(strings => {
-      strings.forEach(string => console.log(string));
+  fetchInbox(config)
+    .then(({ total, unseen }) => `${config.host} total ${total} unseen ${unseen}`)
+    .then(result => {
+      console.log(result);
       process.exit();
     })
     .catch(error => {
       console.error(error);
       process.exit(1);
     })
-})()
+})();
