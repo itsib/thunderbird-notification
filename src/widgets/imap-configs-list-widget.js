@@ -10,18 +10,7 @@ const _ = ExtensionUtils.gettext;
 
 /** @type {Logger} */
 const Logger = new Modules.logger.Logger(Me.metadata['gettext-domain']);
-const { serialize, deserialize } = Modules.utils;
-
-/**
- * @param DUMP_IMAP_SERVER {Object}
- * @param DUMP_IMAP_SERVER.host {string}
- * @param DUMP_IMAP_SERVER.port {number}
- * @param DUMP_IMAP_SERVER.login {string}
- * @param DUMP_IMAP_SERVER.password {password}
- * @param DUMP_IMAP_SERVER.tls {boolean}
- */
-const IMAP_SETTING_FIELDS = ['id', 'host', 'port', 'login', 'password', 'tls'];
-const SETTINGS_IMAP_SERVERS = 'imap-accounts';
+const { serialize, deserialize, StoreKey } = Modules.utils;
 
 class DumpItem extends GObject.Object {
   static {
@@ -82,7 +71,7 @@ class ImapConfigModel extends GObject.Object {
    * Returns serialized config
    */
   serialize() {
-    return serialize(this, IMAP_SETTING_FIELDS);
+    return serialize(this);
   }
 
   /**
@@ -220,7 +209,7 @@ class ImapConfigsList extends GObject.Object {
 
     /**@type {Gio.Settings} */
     this._settings = ExtensionUtils.getSettings();
-    this._changedId = this._settings.connect(`changed::${SETTINGS_IMAP_SERVERS}`, () => this._sync());
+    this._changedId = this._settings.connect(`changed::${StoreKey.ImapSettings}`, () => this._sync());
 
     this._sync();
   }
@@ -284,7 +273,7 @@ class ImapConfigsList extends GObject.Object {
   _saveImapServers() {
     this._settings.block_signal_handler(this._changedId);
 
-    this._settings.set_strv(SETTINGS_IMAP_SERVERS, this._imapServers.map(r => r.serialize()));
+    this._settings.set_strv(StoreKey.ImapSettings, this._imapServers.map(r => r.serialize()));
 
     this._settings.unblock_signal_handler(this._changedId);
   }
@@ -294,8 +283,8 @@ class ImapConfigsList extends GObject.Object {
 
     this._imapServers = [];
 
-    for (const serialized of this._settings.get_strv(SETTINGS_IMAP_SERVERS)) {
-      this._imapServers.push(new ImapConfigModel(deserialize(serialized, IMAP_SETTING_FIELDS)));
+    for (const serialized of this._settings.get_strv(StoreKey.ImapSettings)) {
+      this._imapServers.push(new ImapConfigModel(deserialize(serialized)));
     }
 
     this.items_changed(0, removed, this._imapServers.length);
@@ -405,7 +394,7 @@ var ImapConfigsListWidget = class ImapConfigsListWidget extends Adw.PreferencesG
   _openEditImapConfigDialog(serialized) {
     Logger.info(`Edit serialized ${serialized}`);
 
-    const values = deserialize(serialized, IMAP_SETTING_FIELDS);
+    const values = deserialize(serialized);
 
     Logger.info(`Edit deserialized ${JSON.stringify(values)}`)
 

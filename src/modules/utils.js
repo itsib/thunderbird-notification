@@ -4,6 +4,18 @@ var MenuAlignment = {
   Center: 0.5,
 }
 
+var ProcessFlags = {
+  STDOUT_PIPE: 3,
+  STDERR_PIPE: 5,
+}
+
+var StoreKey = {
+  RefreshInterval: 'refresh-interval',
+  ImapSettings: 'imap-accounts',
+}
+
+var IMAP_SETTING_FIELDS = ['id', 'host', 'port', 'login', 'password', 'tls'];
+
 var SEP = '::';
 
 /**
@@ -12,7 +24,7 @@ var SEP = '::';
  * @param keys {string[]} Ordered keys of object to serialize
  * @returns {string}
  */
-var serialize = function (object, keys) {
+var serialize = (object, keys = IMAP_SETTING_FIELDS) => {
   let serialized = '';
 
   const lastInx = keys.length - 1;
@@ -42,9 +54,9 @@ var serialize = function (object, keys) {
   }
 
   return serialized;
-}
+};
 
-var deserialize = (serialized, keys) => {
+var deserialize = (serialized, keys = IMAP_SETTING_FIELDS) => {
   const object = {};
   const segments = serialized.split(SEP);
 
@@ -71,4 +83,4 @@ var deserialize = (serialized, keys) => {
   }
 
   return object;
-}
+};

@@ -6,8 +6,7 @@ const _ = ExtensionUtils.gettext;
 
 /** @type {Logger} */
 const Logger = new Me.imports.modules.logger.Logger(Me.metadata['gettext-domain']);
-
-const FIELD_NAME_REFRESH_INTERVAL = 'refresh-interval';
+const { StoreKey } = Me.imports.modules.utils;
 
 var RefreshIntervalControl = class CommonPreferencesGroup extends Adw.PreferencesGroup {
   static { GObject.registerClass(this) }
@@ -29,20 +28,20 @@ var RefreshIntervalControl = class CommonPreferencesGroup extends Adw.Preference
     });
 
     const spinButton = new Gtk.SpinButton({
-      value: settings.get_int(FIELD_NAME_REFRESH_INTERVAL),
+      value: settings.get_int(StoreKey.RefreshInterval),
       valign: Gtk.Align.CENTER,
     });
 
     spinButton.set_sensitive(true);
-    spinButton.set_range(30, 240);
+    spinButton.set_range(30, 86400);
     spinButton.set_increments(5, 2);
-    spinButton.set_value(settings.get_int(FIELD_NAME_REFRESH_INTERVAL));
+    spinButton.set_value(settings.get_int(StoreKey.RefreshInterval));
     spinButton.connect('value-changed', btn => {
       const amount = btn.get_value_as_int();
 
-      Logger.debug(`Update ${FIELD_NAME_REFRESH_INTERVAL}: ${amount}`);
+      Logger.debug(`Update ${StoreKey.RefreshInterval}: ${amount}`);
 
-      settings.set_int(FIELD_NAME_REFRESH_INTERVAL, amount);
+      settings.set_int(StoreKey.RefreshInterval, amount);
     });
 
     actionRow.add_suffix(spinButton);
