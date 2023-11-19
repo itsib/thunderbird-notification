@@ -14,3 +14,9 @@
 .email-menu-item .popup-menu-icon {
     margin-right: 10px;
 }
+
+.imap-config-form-submit-success {
+    background-color: green;
+    color: white;
+    font-weight: normal;
+}

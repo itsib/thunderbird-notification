@@ -40,6 +40,8 @@ var ImapConfigFormDialog = class ImapConfigForm extends Gtk.Dialog {
       this.tls = values.tls;
     }
 
+    this.add_css_class('imap-config-form-dialog');
+
     const builder = new Gtk.Builder();
     builder.set_translation_domain(Me.metadata['gettext-domain']);
     builder.add_from_file(`${Me.path}/prefs-ui/imap-config-form-dialog.ui`);
@@ -72,8 +74,25 @@ var ImapConfigFormDialog = class ImapConfigForm extends Gtk.Dialog {
     });
 
     this.get_content_area().append(imapConfigForm);
+
     this.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
-    this.add_button(isAdd ? _('Add') : _('Apply'), Gtk.ResponseType.APPLY);
+    const submitBtn = this.add_button(isAdd ? _('Add') : _('Apply'), Gtk.ResponseType.APPLY);
+
+    submitBtn.add_css_class('imap-config-form-submit-success');
+    submitBtn.set_sensitive(false);
+
+
+    const validate = () => {
+      if (!loginField.text || !passwordField.text || !hostField.text) {
+        submitBtn.set_sensitive(false);
+      } else {
+        submitBtn.set_sensitive(true);
+      }
+    };
+
+    loginField.connect('changed', () => validate());
+    passwordField.connect('changed', () => validate());
+    hostField.connect('changed', () => validate());
   }
 
   /**
