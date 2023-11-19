@@ -34,50 +34,8 @@ function decode(str) {
   return r.join('');
 }
 
-// Escape RegEx from http://simonwillison.net/2006/Jan/20/escape/
-function escape(chars) {
-  return chars.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-}
-
-// Character classes defined by RFC 2152.
-var setD = "A-Za-z0-9" + escape("'(),-./:?");
-var setO = escape("!\"#$%&*;<=>@[]^_'{|}");
-var setW = escape(" \r\n\t");
-
-// Stores compiled regexes for various replacement pattern.
-var regexes = {};
-var regexAll = new RegExp("[^" + setW + setD + setO + "]+", 'g');
-
-exports.imap = {};
-
-// RFC 2152 UTF-7 encoding.
-exports.encode = function(str, mask) {
-  // Generate a RegExp object from the string of mask characters.
-  if (!mask) {
-    mask = '';
-  }
-  if (!regexes[mask]) {
-    regexes[mask] = new RegExp("[^" + setD + escape(mask) + "]+", 'g');
-  }
-
-  // We replace subsequent disallowed chars with their escape sequence.
-  return str.replace(regexes[mask], function(chunk) {
-    // + is represented by an empty sequence +-, otherwise call encode().
-    return '+' + (chunk === '+' ? '' : encode(chunk)) + '-';
-  });
-};
-
-// RFC 2152 UTF-7 encoding with all optionals.
-exports.encodeAll = function(str) {
-  // We replace subsequent disallowed chars with their escape sequence.
-  return str.replace(regexAll, function(chunk) {
-    // + is represented by an empty sequence +-, otherwise call encode().
-    return '+' + (chunk === '+' ? '' : encode(chunk)) + '-';
-  });
-};
-
 // RFC 3501, section 5.1.3 UTF-7 encoding.
-exports.imap.encode = function(str) {
+exports.encode = str => {
   // All printable ASCII chars except for & must be represented by themselves.
   // We replace subsequent non-representable chars with their escape sequence.
   return str.replace(/&/g, '&-').replace(/[^\x20-\x7e]+/g, function(chunk) {
@@ -87,17 +45,8 @@ exports.imap.encode = function(str) {
   });
 };
 
-// RFC 2152 UTF-7 decoding.
-exports.decode = function(str) {
-  return str.replace(/\+([A-Za-z0-9\/]*)-?/gi, function(_, chunk) {
-    // &- represents &.
-    if (chunk === '') return '+';
-    return decode(chunk);
-  });
-};
-
 // RFC 3501, section 5.1.3 UTF-7 decoding.
-exports.imap.decode = function(str) {
+exports.decode = str => {
   return str.replace(/&([^-]*)-/g, function(_, chunk) {
     // &- represents &.
     if (chunk === '') return '&';

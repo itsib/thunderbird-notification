@@ -3,8 +3,7 @@ var tls = require('tls'),
     EventEmitter = require('events').EventEmitter,
     inherits = require('util').inherits,
     inspect = require('util').inspect,
-    isDate = require('util').isDate,
-    utf7 = require('./utf7').imap;
+    utf7 = require('./utf7');
 
 var Parser = require('./parser').Parser;
 
@@ -38,7 +37,6 @@ var MAX_INT = 9007199254740992,
     RE_IDLENOOPRES = /^(IDLE|NOOP) /,
     RE_OPENBOX = /^EXAMINE|SELECT$/,
     RE_BODYPART = /^BODY\[/,
-    RE_INVALID_KW_CHARS = /[\(\)\{\\\"\]\%\*\x00-\x20\x7F]/,
     RE_NUM_RANGE = /^(?:[\d]+|\*):(?:[\d]+|\*)$/,
     RE_BACKSLASH = /\\/g,
     RE_DBLQUOTE = /"/g,
@@ -310,65 +308,6 @@ Connection.prototype.end = function() {
   });
 };
 
-Connection.prototype.append = function(data, options, cb) {
-
-
-  var literal = this.serverSupports('LITERAL+');
-  if (typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
-  options = options || {};
-  if (!options.mailbox) {
-    if (!this._box)
-      throw new Error('No mailbox specified or currently selected');
-    else
-      options.mailbox = this._box.name;
-  }
-  var cmd = 'APPEND "' + escape(utf7.encode(''+options.mailbox)) + '"';
-  if (options.flags) {
-    if (!Array.isArray(options.flags))
-      options.flags = [options.flags];
-    if (options.flags.length > 0) {
-      for (var i = 0, len = options.flags.length; i < len; ++i) {
-        if (options.flags[i][0] !== '$' && options.flags[i][0] !== '\\')
-          options.flags[i] = '\\' + options.flags[i];
-      }
-      cmd += ' (' + options.flags.join(' ') + ')';
-    }
-  }
-  if (options.date) {
-    if (!isDate(options.date))
-      throw new Error('`date` is not a Date object');
-    cmd += ' "';
-    cmd += options.date.getDate();
-    cmd += '-';
-    cmd += MONTHS[options.date.getMonth()];
-    cmd += '-';
-    cmd += options.date.getFullYear();
-    cmd += ' ';
-    cmd += ('0' + options.date.getHours()).slice(-2);
-    cmd += ':';
-    cmd += ('0' + options.date.getMinutes()).slice(-2);
-    cmd += ':';
-    cmd += ('0' + options.date.getSeconds()).slice(-2);
-    cmd += ((options.date.getTimezoneOffset() > 0) ? ' -' : ' +' );
-    cmd += ('0' + (-options.date.getTimezoneOffset() / 60)).slice(-2);
-    cmd += ('0' + (-options.date.getTimezoneOffset() % 60)).slice(-2);
-    cmd += '"';
-  }
-  cmd += ' {';
-  cmd += (Buffer.isBuffer(data) ? data.length : Buffer.byteLength(data));
-  cmd += (literal ? '+' : '') + '}';
-
-  this._enqueue(cmd, cb);
-
-  if (literal)
-    this._queue[this._queue.length - 1].literalAppendData = data;
-  else
-    this._queue[this._queue.length - 1].appendData = data;
-};
-
 Connection.prototype.id = function(identification, cb) {
 
 
@@ -426,48 +365,6 @@ Connection.prototype.openBox = function(name, readOnly, cb) {
   });
 };
 
-Connection.prototype.closeBox = function(shouldExpunge, cb) {
-
-
-  if (this._box === undefined)
-    throw new Error('No mailbox is currently selected');
-
-  var self = this;
-
-  if (typeof shouldExpunge === 'function') {
-    cb = shouldExpunge;
-    shouldExpunge = true;
-  }
-
-  if (shouldExpunge) {
-    this._enqueue('CLOSE', function(err) {
-      if (!err)
-        self._box = undefined;
-
-      cb(err);
-    });
-  } else {
-    if (this.serverSupports('UNSELECT')) {
-      // use UNSELECT if available, as it claims to be "cleaner" than the
-      // alternative "hack"
-      this._enqueue('UNSELECT', function(err) {
-        if (!err)
-          self._box = undefined;
-
-        cb(err);
-      });
-    } else {
-      // "HACK": close the box without expunging by attempting to SELECT a
-      // non-existent mailbox
-      var badbox = 'NODEJSIMAPCLOSINGBOX' + Date.now();
-      this._enqueue('SELECT "' + badbox + '"', function(err) {
-        self._box = undefined;
-        cb();
-      });
-    }
-  }
-};
-
 Connection.prototype.expunge = function(uids, cb) {
 
 
@@ -522,185 +419,6 @@ Connection.prototype._search = function(which, criteria, cb) {
   if (info.hasUTF8) {
     var req = this._queue[this._queue.length - 1];
     req.lines = lines;
-  }
-};
-
-Connection.prototype.addFlags = function(uids, flags, cb) {
-
-
-  this._store('UID ', uids, { mode: '+', flags: flags }, cb);
-};
-
-Connection.prototype.delFlags = function(uids, flags, cb) {
-
-
-  this._store('UID ', uids, { mode: '-', flags: flags }, cb);
-};
-
-Connection.prototype._store = function(which, uids, cfg, cb) {
-
-
-  var mode = cfg.mode,
-      isFlags = (cfg.flags !== undefined),
-      items = (isFlags ? cfg.flags : cfg.keywords);
-  if (this._box === undefined)
-    throw new Error('No mailbox is currently selected');
-  else if (uids === undefined)
-    throw new Error('No messages specified');
-
-  if (!Array.isArray(uids))
-    uids = [uids];
-  validateUIDList(uids);
-
-  if (uids.length === 0) {
-    throw new Error('Empty '
-                    + (which === '' ? 'sequence number' : 'uid')
-                    + 'list');
-  }
-
-  if ((!Array.isArray(items) && typeof items !== 'string')
-      || (Array.isArray(items) && items.length === 0))
-    throw new Error((isFlags ? 'Flags' : 'Keywords')
-                    + ' argument must be a string or a non-empty Array');
-  if (!Array.isArray(items))
-    items = [items];
-  for (var i = 0, len = items.length; i < len; ++i) {
-    if (isFlags) {
-      if (items[i][0] !== '\\')
-        items[i] = '\\' + items[i];
-    } else {
-      // keyword contains any char except control characters (%x00-1F and %x7F)
-      // and: '(', ')', '{', ' ', '%', '*', '\', '"', ']'
-      if (RE_INVALID_KW_CHARS.test(items[i])) {
-        throw new Error('The keyword "' + items[i]
-                        + '" contains invalid characters');
-      }
-    }
-  }
-
-  items = items.join(' ');
-  uids = uids.join(',');
-
-  var modifiers = '';
-  if (cfg.modseq !== undefined && !this._box.nomodseq)
-    modifiers += 'UNCHANGEDSINCE ' + cfg.modseq + ' ';
-
-  this._enqueue(which + 'STORE ' + uids + ' '
-                + modifiers
-                + mode + 'FLAGS.SILENT (' + items + ')', cb);
-};
-
-Connection.prototype.copy = function(uids, boxTo, cb) {
-
-
-  this._copy('UID ', uids, boxTo, cb);
-};
-
-Connection.prototype._copy = function(which, uids, boxTo, cb) {
-
-
-  if (this._box === undefined)
-    throw new Error('No mailbox is currently selected');
-
-  if (!Array.isArray(uids))
-    uids = [uids];
-  validateUIDList(uids);
-
-  if (uids.length === 0) {
-    throw new Error('Empty '
-                    + (which === '' ? 'sequence number' : 'uid')
-                    + 'list');
-  }
-
-  boxTo = escape(utf7.encode(''+boxTo));
-
-  this._enqueue(which + 'COPY ' + uids.join(',') + ' "' + boxTo + '"', cb);
-};
-
-Connection.prototype._move = function(which, uids, boxTo, cb) {
-
-
-  if (this._box === undefined)
-    throw new Error('No mailbox is currently selected');
-
-  if (this.serverSupports('MOVE')) {
-    if (!Array.isArray(uids))
-      uids = [uids];
-    validateUIDList(uids);
-
-    if (uids.length === 0) {
-      throw new Error('Empty '
-                      + (which === '' ? 'sequence number' : 'uid')
-                      + 'list');
-    }
-
-    uids = uids.join(',');
-    boxTo = escape(utf7.encode(''+boxTo));
-
-    this._enqueue(which + 'MOVE ' + uids + ' "' + boxTo + '"', cb);
-  } else if (this._box.permFlags.indexOf('\\Deleted') === -1
-             && this._box.flags.indexOf('\\Deleted') === -1) {
-    throw new Error('Cannot move message: '
-                    + 'server does not allow deletion of messages');
-  } else {
-    var deletedUIDs, task = 0, self = this;
-    this._copy(which, uids, boxTo, function ccb(err, info) {
-      if (err)
-        return cb(err, info);
-
-      if (task === 0 && which && self.serverSupports('UIDPLUS')) {
-        // UIDPLUS gives us a 'UID EXPUNGE n' command to expunge a subset of
-        // messages with the \Deleted flag set. This allows us to skip some
-        // actions.
-        task = 2;
-      }
-      // Make sure we don't expunge any messages marked as Deleted except the
-      // one we are moving
-      if (task === 0) {
-        self.search(['DELETED'], function(e, result) {
-          ++task;
-          deletedUIDs = result;
-          ccb(e, info);
-        });
-      } else if (task === 1) {
-        if (deletedUIDs.length) {
-          self.delFlags(deletedUIDs, '\\Deleted', function(e) {
-            ++task;
-            ccb(e, info);
-          });
-        } else {
-          ++task;
-          ccb(err, info);
-        }
-      } else if (task === 2) {
-        var cbMarkDel = function(e) {
-          ++task;
-          ccb(e, info);
-        };
-        if (which)
-          self.addFlags(uids, '\\Deleted', cbMarkDel);
-        else
-          self.seq.addFlags(uids, '\\Deleted', cbMarkDel);
-      } else if (task === 3) {
-        if (which && self.serverSupports('UIDPLUS')) {
-          self.expunge(uids, function(e) {
-            cb(e, info);
-          });
-        } else {
-          self.expunge(function(e) {
-            ++task;
-            ccb(e, info);
-          });
-        }
-      } else if (task === 4) {
-        if (deletedUIDs.length) {
-          self.addFlags(deletedUIDs, '\\Deleted', function(e) {
-            cb(e, info);
-          });
-        } else
-          cb(err, info);
-      }
-    });
   }
 };
 
@@ -798,48 +516,6 @@ Connection.prototype._fetch = function(which, uids, options) {
 };
 
 // Extension methods ===========================================================
-
-Connection.prototype._storeLabels = function(which, uids, labels, mode, cb) {
-
-
-  if (!this.serverSupports('X-GM-EXT-1'))
-    throw new Error('Server must support X-GM-EXT-1 capability');
-  else if (this._box === undefined)
-    throw new Error('No mailbox is currently selected');
-  else if (uids === undefined)
-    throw new Error('No messages specified');
-
-  if (!Array.isArray(uids))
-    uids = [uids];
-  validateUIDList(uids);
-
-  if (uids.length === 0) {
-    throw new Error('Empty '
-                    + (which === '' ? 'sequence number' : 'uid')
-                    + 'list');
-  }
-
-  if ((!Array.isArray(labels) && typeof labels !== 'string')
-      || (Array.isArray(labels) && labels.length === 0))
-    throw new Error('labels argument must be a string or a non-empty Array');
-
-  if (!Array.isArray(labels))
-    labels = [labels];
-  labels = labels.map(function(v) {
-    return '"' + escape(utf7.encode(''+v)) + '"';
-  }).join(' ');
-
-  uids = uids.join(',');
-
-  this._enqueue(which + 'STORE ' + uids + ' ' + mode
-                + 'X-GM-LABELS.SILENT (' + labels + ')', cb);
-};
-
-Connection.prototype.sort = function(sorts, criteria, cb) {
-
-
-  this._sort('UID ', sorts, criteria, cb);
-};
 
 Connection.prototype._sort = function(which, sorts, criteria, cb) {
 
@@ -972,48 +648,11 @@ Connection.prototype._thread = function(which, algorithm, criteria, cb) {
 Connection.prototype.__defineGetter__('seq', function() {
   var self = this;
   return {
-    delKeywords: function(seqnos, keywords, cb) {
-      self._store('', seqnos, { mode: '-', keywords: keywords }, cb);
-    },
-    addKeywords: function(seqnos, keywords, cb) {
-      self._store('', seqnos, { mode: '+', keywords: keywords }, cb);
-    },
-    setKeywords: function(seqnos, keywords, cb) {
-      self._store('', seqnos, { mode: '', keywords: keywords }, cb);
-    },
-
-    delFlags: function(seqnos, flags, cb) {
-      self._store('', seqnos, { mode: '-', flags: flags }, cb);
-    },
-    addFlags: function(seqnos, flags, cb) {
-      self._store('', seqnos, { mode: '+', flags: flags }, cb);
-    },
-    setFlags: function(seqnos, flags, cb) {
-      self._store('', seqnos, { mode: '', flags: flags }, cb);
-    },
-
-    move: function(seqnos, boxTo, cb) {
-      self._move('', seqnos, boxTo, cb);
-    },
-    copy: function(seqnos, boxTo, cb) {
-      self._copy('', seqnos, boxTo, cb);
-    },
     fetch: function(seqnos, options) {
       return self._fetch('', seqnos, options);
     },
     search: function(options, cb) {
       self._search('', options, cb);
-    },
-
-    // Extensions ==============================================================
-    delLabels: function(seqnos, labels, cb) {
-      self._storeLabels('', seqnos, labels, '-', cb);
-    },
-    addLabels: function(seqnos, labels, cb) {
-      self._storeLabels('', seqnos, labels, '+', cb);
-    },
-    setLabels: function(seqnos, labels, cb) {
-      self._storeLabels('', seqnos, labels, '', cb);
     },
 
     esearch: function(criteria, options, cb) {
@@ -1026,44 +665,6 @@ Connection.prototype.__defineGetter__('seq', function() {
     thread: function(algorithm, criteria, cb) {
       self._thread('', algorithm, criteria, cb);
     },
-
-    delKeywordsSince: function(seqnos, keywords, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '-', keywords: keywords, modseq: modseq },
-                  cb);
-    },
-    addKeywordsSince: function(seqnos, keywords, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '+', keywords: keywords, modseq: modseq },
-                  cb);
-    },
-    setKeywordsSince: function(seqnos, keywords, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '', keywords: keywords, modseq: modseq },
-                  cb);
-    },
-
-    delFlagsSince: function(seqnos, flags, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '-', flags: flags, modseq: modseq },
-                  cb);
-    },
-    addFlagsSince: function(seqnos, flags, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '+', flags: flags, modseq: modseq },
-                  cb);
-    },
-    setFlagsSince: function(seqnos, flags, modseq, cb) {
-      self._store('',
-                  seqnos,
-                  { mode: '', flags: flags, modseq: modseq },
-                  cb);
-    }
   };
 });
 

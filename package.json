@@ -15,9 +15,6 @@
     "reload": "./scripts/reload.sh",
     "logs": "./scripts/journal.sh"
   },
-  "dependencies": {
-    "imap": "^0.8.17"
-  },
   "devDependencies": {
     "@girs/adw-1": "^1.4.0-3.2.4",
     "@girs/gjs": "^3.2.3",

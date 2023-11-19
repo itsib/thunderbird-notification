@@ -3,7 +3,7 @@ var EventEmitter = require('events').EventEmitter,
     inherits = require('util').inherits,
     inspect = require('util').inspect;
 
-var utf7 = require('utf7').imap; // lazy-loaded
+var utf7 = require('./utf7'); // lazy-loaded
 
 var CH_LF = 10,
     LITPLACEHOLDER = String.fromCharCode(0),
@@ -242,8 +242,6 @@ Parser.prototype._resUntagged = function() {
       val = parseBoxList(m[5], this._literals);
     else if (type === 'id')
       val = parseId(m[5], this._literals);
-    else if (type === 'status')
-      val = parseStatus(m[5], this._literals);
     else if (type === 'fetch')
       val = parseFetch.call(this, m[5], this._literals, num);
     else if (type === 'namespace')
@@ -401,17 +399,6 @@ function parseNamespaces(text, literals) {
     personal: r[0],
     other: r[1],
     shared: r[2]
-  };
-}
-
-function parseStatus(text, literals) {
-  var r = parseExpr(text, literals), attrs = {};
-  // r[1] is [KEY1, VAL1, KEY2, VAL2, .... KEYn, VALn]
-  for (var i = 0, len = r[1].length; i < len; i += 2)
-    attrs[r[1][i].toLowerCase()] = r[1][i + 1];
-  return {
-    name: utf7.decode(''+r[0]),
-    attrs: attrs
   };
 }
 
